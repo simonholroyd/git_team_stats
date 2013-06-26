@@ -1,0 +1,59 @@
+{
+    "default_time_period" : "week", /* week, year, day*/
+    "users" : [
+        {
+            "name" : "you",
+            "aliases" : ["Your Alias #1", "yourotheralias"],
+            "default" : true
+        },
+        {
+            "name" : "collaborator",
+            "aliases" : ["Their alias"]
+        }
+    ],
+    "projects" : [
+        {
+            "name" : "project 1",
+            "repos" : ["~/src/proj1", "~/src/dependencies/proj1-dep"],
+            "ignored_directories" : ["Some/directory/you/forgot/to/gitignore/"],
+            "default" : true,
+            "start_date" : 1369253382,
+            "end_date" : 1369356790
+        },
+        {
+            "name" : "Other project",
+            "repos" : ["~/src/OtherProject"],
+            "ignored_directories" : []
+        }
+    ],
+    "languages" : [
+        {
+            "name" : "php",
+            "extensions" : ["php"]
+        },
+        {
+            "name" : "js",
+            "extensions" : ["js", "json", "handlebars"]
+        },
+        {
+            "name" : "rb",
+            "extensions" : ["rb"]
+        },
+        {
+            "name" : "html",
+            "extensions" : ["html"]
+        },
+        {
+            "name" : "sass",
+            "extensions" : ["scss"]
+        },
+        {
+            "name" : "css",
+            "extensions" : ["css"]
+        },
+        {
+            "name" : "obj-c",
+            "extensions" : ["m", "h", "plist", "pch"]
+        }
+    ]
+}
