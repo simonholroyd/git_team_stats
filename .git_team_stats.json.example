@@ -1,5 +1,4 @@
 {
-    "default_time_period" : "week", /* week, year, day*/
     "users" : [
         {
             "name" : "you",
@@ -24,36 +23,6 @@
             "name" : "Other project",
             "repos" : ["~/src/OtherProject"],
             "ignored_directories" : []
-        }
-    ],
-    "languages" : [
-        {
-            "name" : "php",
-            "extensions" : ["php"]
-        },
-        {
-            "name" : "js",
-            "extensions" : ["js", "json", "handlebars"]
-        },
-        {
-            "name" : "rb",
-            "extensions" : ["rb"]
-        },
-        {
-            "name" : "html",
-            "extensions" : ["html"]
-        },
-        {
-            "name" : "sass",
-            "extensions" : ["scss"]
-        },
-        {
-            "name" : "css",
-            "extensions" : ["css"]
-        },
-        {
-            "name" : "obj-c",
-            "extensions" : ["m", "h", "plist", "pch"]
         }
     ]
 }

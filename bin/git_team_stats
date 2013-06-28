@@ -10,11 +10,18 @@ include GLI::App
  
 program_desc 'Analyze commits and committers in mulitple git repos and output project-level statistics'
  
+desc "The path to your config file"
 flag [:config_path], :default_value => File.join(Dir.pwd,'.git_team_stats.json')
+desc "The path to your cache files"
 flag [:cache_path], :default_value => File.join(Dir.pwd,'tmp')
+desc "The time period to group values by"
 flag [:time_period], :default_value => :week
+desc "The project name to run on"
 flag [:project], :default_value => :none
+desc "A switch to turn off loading from cache"
 switch [:ignore_cache]
+desc "A switch to turn off writing to cache"
+switch [:no_cache]
  
 pre do |global_options,command,options,args|
   $dir = Dir.pwd
@@ -87,7 +94,7 @@ def load_cache(global_options)
     return
   end
 
-  cache_file_path = File.join(global_options[:cache_path], GitTeamStats.get_cache_file_name(), '.json')
+  cache_file_path = File.join(global_options[:cache_path], GitTeamStats.get_cache_file_name() + '.json')
 
   if (File.exist?(cache_file_path))
     output = JSON.parse(File.open(cache_file_path, 'rb').read, {:symbolize_names => true})
@@ -103,8 +110,8 @@ command :count_commits do |c|
   c.action do |global_options,options,args|
     require_project(global_options)
 
-    puts GitTeamStats.count_commits()
-
+    GitTeamStats.inspect_commits()
+    puts "Total commits : " + GitTeamStats.count_commits().to_s
   end
 end
 
@@ -168,10 +175,13 @@ end
 
 
 post do |global_options,command,options,args|
-  #TODO: save the output (if any) to a json file for quicker inspection
+  if (global_options[:no_cache])
+    return
+  end
+
   if (Dir.exist?(global_options[:cache_path]))
     output = GitTeamStats.get_cache_output()
-    cache_file_path = File.join(global_options[:cache_path], GitTeamStats.get_cache_file_name(), '.json')
+    cache_file_path = File.join(global_options[:cache_path], GitTeamStats.get_cache_file_name() + '.json')
 
     if (File.exist?(cache_file_path))
         f = File.open(cache_file_path, "w+")

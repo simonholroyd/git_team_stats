@@ -25,11 +25,11 @@ module GitTeamStats
   def self.count_commits
     count = 0
     
-    @project[:parsers].each do |parser|
-      count += parser.count_commits()
+    if !@inspected
+      self.inspect_commits()
     end
 
-    return count
+    return @commits_in_detail.length
   end
 
   def self.collect_commits
