@@ -76,13 +76,13 @@ $ git_team_stats [global options] command [command options] [arguments...]
    - The project name to run on (default: none).  Make sure you have projects set in your config file.
 
 **help**: ```--help```
-    - Show this message
+   - Show this message
 
 **ignore_cache**: ```--ignore_cache```
-    - A switch to turn off loading from cache
+   - A switch to turn off loading from cache
 
 **no_cache**: ```--no_cache```
-    - A switch to turn off writing to cache
+   - A switch to turn off writing to cache
 
 ### Commands
 
