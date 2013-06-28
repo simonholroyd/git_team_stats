@@ -88,21 +88,27 @@ $ git_team_stats [global options] command [command options] [arguments...]
 
 ##### Count Commits
 
-```$ git_team_stats count_commits```
+```
+$ git_team_stats count_commits
+```
 
 Returns the total number of commits across all your repos in the given project
 
 
 ##### Inspect Commits
 
-```$ git_team_stats inspect_commits```
+```
+$ git_team_stats inspect_commits
+```
 
 Runs the full inspection on your project repos
 
 
 ##### Team Cumulative Commits
 
-```$ git_team_stats team_cumulative_stats```
+```
+$ git_team_stats team_cumulative_stats
+```
 
 Gather cumulative statistics on the team.  Example output:
 
@@ -144,7 +150,9 @@ languages:
 
 ##### User Cumulative Commits
 
-```$ git_team_stats user_cumulative_stats [--user]```
+```
+$ git_team_stats user_cumulative_stats [--user]
+```
 
 Gather cumulative statistics on a team member.  Note you should either have a default user in your config file or pass a user name in the CLI. Example output:
 
