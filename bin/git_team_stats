@@ -11,25 +11,27 @@ include GLI::App
 program_desc 'Analyze commits and committers in mulitple git repos and output project-level statistics'
  
 flag [:config_path], :default_value => File.join(Dir.pwd,'.git_team_stats.json')
+flag [:cache_path], :default_value => File.join(Dir.pwd,'tmp')
 flag [:time_period], :default_value => :week
 flag [:project], :default_value => :none
-flag [:user], :default_value => :none
+switch [:ignore_cache]
  
 pre do |global_options,command,options,args|
   $dir = Dir.pwd
 
   $users = []
   $projects = []
+  $project = nil
 
   if File.exists? global_options[:config_path]
     config = JSON.parse(File.read(global_options[:config_path]), {:symbolize_names => true})
 
     $users = (config[:users].empty?) ? [] : config[:users]
-    puts config[:projects]
     $projects = (config[:projects].empty?) ? [] : config[:projects]
 
   end
 
+  
   if $projects.empty?
     $projects.push({
         :name => "current",
@@ -38,33 +40,158 @@ pre do |global_options,command,options,args|
         :default => true
       })
   end
-end
- 
-command :test do |c|
-  c.action do |global_options,options,args|
-    puts $dir
-    puts $projects
-    puts $users
 
-    puts global_options
-  end
+  true
 end
- 
-command :list do |c|
-  c.action do
-    # $todo_list.list.each do |todo|
-    #   printf("%5d - %s\n",todo.todo_id,todo.text)
-    # end
+
+def require_user(options)
+  
+  if options[:user] == :none
+    if $users.select{ :default == true }.empty?
+      help_now!('user is required, either as a command line arg or a default in .git_team_stats.json')
+    else 
+      $user = $users.select{ :default == true }[0]
+    end
+  else
+    $user = {
+      :name => options[:user].to_s,
+      :aliases => [options[:user].to_s]
+    }
   end
+
 end
- 
-command :done do |c|
+
+def require_project(global_options)
+  if global_options[:project] == :none
+    if !$projects.select{ |proj| proj[:default] == true }.empty?
+      $project = $projects.select{ |proj| proj[:default]  == true }[0]
+    end
+  else
+    if !$projects.select{ |proj| proj[:name] == global_options[:project] }.empty?
+      $project = $projects.select{ |proj| proj[:name] == global_options[:project] }[0]
+    end
+  end
+  if ($project == nil)
+    puts $projects
+    help_now!('project is required, either as a command line arg or a default in .git_team_stats.json')
+  end
+
+  GitTeamStats.start($project)
+  
+  load_cache(global_options)
+
+end
+
+def load_cache(global_options)
+  if (global_options[:ignore_cache])
+    return
+  end
+
+  cache_file_path = File.join(global_options[:cache_path], GitTeamStats.get_cache_file_name(), '.json')
+
+  if (File.exist?(cache_file_path))
+    output = JSON.parse(File.open(cache_file_path, 'rb').read, {:symbolize_names => true})
+    puts "Loading data from cache".color(:yellow)
+    GitTeamStats.load_from_cache(output)
+  end
+
+end
+
+
+desc "Count the total commits in the project"
+command :count_commits do |c|
   c.action do |global_options,options,args|
-    # id = args.shift.to_i
-    # $todo_list.list.each do |todo|
-    #   $todo_list.complete(todo) if todo.todo_id == id
-    # end
+    require_project(global_options)
+
+    puts GitTeamStats.count_commits()
+
   end
 end
+
+desc "Run the standard project inspection"
+command :inspect_commits do |c|
+  c.action do |global_options,options,args|
+    require_project(global_options)
+
+    puts GitTeamStats.inspect_commits()
+
+  end
+end
+
+desc "Gather cumulative statistics on the team"
+command :team_cumulative_stats do |c|
+  c.action do |global_options,options,args|
+    require_project(global_options)
+
+    stats = GitTeamStats.team_cumulative_stats()
+    puts "~~~ Cumulative Team Statistics ~~~~~~~~".color(:green)
+    stats.each{ |key, value|
+      if (key == :file_types)
+        puts "languages: "
+        value.each{ |language, data|
+          puts "   " + language.to_s 
+          puts "      edits : " + data[:edits].to_s
+          puts "      lines : " + data[:lines].to_s
+        }
+      else
+        puts key.to_s + " : " + value.to_s
+      end
+    }
+
+  end
+end
+
+desc "Gather cumulative statistics on a specific user"
+command :user_cumulative_stats do |c|
+  c.flag [:user], :default_value => :none
+  c.action do |global_options,options,args|
+    require_project(global_options)
+    require_user(options)
+
+    stats = GitTeamStats.user_cumulative_stats($user)
+    headline = "~~~ Cumulative User Statistics (%s) ~~~~~~~~" % $user[:name].to_s
+    puts headline.color(:green)
+    stats.each{ |key, value|
+      if (key == :file_types)
+        puts "languages: "
+        value.each{ |language, data|
+          puts "   " + language.to_s 
+          puts "      edits : " + data[:edits].to_s
+          puts "      lines : " + data[:lines].to_s
+        }
+      else
+        puts key.to_s + " : " + value.to_s
+      end
+    }
+  end
+end
+
+
+post do |global_options,command,options,args|
+  #TODO: save the output (if any) to a json file for quicker inspection
+  if (Dir.exist?(global_options[:cache_path]))
+    output = GitTeamStats.get_cache_output()
+    cache_file_path = File.join(global_options[:cache_path], GitTeamStats.get_cache_file_name(), '.json')
+
+    if (File.exist?(cache_file_path))
+        f = File.open(cache_file_path, "w+")
+    else
+        f = File.new(cache_file_path, "w+")
+    end
+    f.write(output.to_json)
+    f.close()
+
+    
+  else
+    puts "Could not cache results, could not write to cache directory".color(:yellow)
+  end
+
+  true
+end 
+
+on_error do |exception|
+  puts exception
+end
+
  
 exit run(ARGV)
