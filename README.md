@@ -1,6 +1,6 @@
 # GitTeamStats
 
-TODO: Write a gem description
+Analyze commits and committers in mulitple git repos and output project-level statistics
 
 ## Installation
 
